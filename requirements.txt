@@ -1,0 +1,10 @@
+# Dependências principais
+pandas==2.1.0          # para manipulação de dados
+kaggle==1.5.16         # para extração dos dados
+pyspark==3.5.5         # para processamento distribuído
+pyarrow==14.0.1        # otimização para Parquet
+python-dotenv==1.0.0   # configurações de ambiente
+findspark==2.0.1       # integração com Spark
+openpyxl==3.1.2        # leitura de arquivos Excel
+
+# Para desenvolvimento e teste, use dev-requirements.txt
