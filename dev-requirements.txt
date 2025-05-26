@@ -1,8 +1,0 @@
-# Ferramentas de desenvolvimento
-jupyter==1.0.0         # ambiente interativo
-notebook==7.0.6        # notebooks Jupyter
-pytest==7.4.0          # testes unitários
-pytest-cov==4.1.0      # cobertura de testes
-black==23.7.0          # formatação de código
-flake8==6.1.0          # linting
-isort==5.12.0          # organização de imports

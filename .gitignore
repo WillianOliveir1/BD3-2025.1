@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Data
+data/
+*.parquet
+*.csv
+*.tsv
+*.json
+*.xlsx
+*.xls
+
+# Credentials and sensitive files
+kaggle.json
+**/kaggle.json
+config/kaggle.json
+.env
+
+# Temp files
+logs/
+*.log
+.~*
+
+# IDE
+.vscode/
+.idea/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local configuration
+config/
+!config/example_config.json
+
+# Excel temp files
+~$*

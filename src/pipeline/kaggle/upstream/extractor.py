@@ -41,8 +41,7 @@ class KaggleExtractor:
         Inicializa o extrator do Kaggle.
         
         Args:
-            data_lake_manager: Instância do DataLakeManager. Se não fornecida,
-                             cria uma nova instância.
+            data_lake_manager: Instância do DataLakeManager. Se não fornecida, cria uma nova instância.
         """
         self.logger = setup_logger('KaggleExtractor')
         self.data_lake = data_lake_manager or DataLakeManager()
@@ -66,8 +65,7 @@ class KaggleExtractor:
         Extrai um dataset do Kaggle e salva na camada bronze.
         
         Args:
-            dataset_ref: Referência do dataset no formato "owner/dataset-name"
-                       Se não fornecido, usa o dataset padrão configurado
+            dataset_ref: Referência do dataset no formato "owner/dataset-name". Se não fornecido, usa o dataset padrão configurado
             filename: Nome do arquivo específico para baixar (opcional)
             
         Returns:
