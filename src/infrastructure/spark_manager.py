@@ -6,6 +6,7 @@ import logging
 import findspark
 from pyspark.sql import SparkSession
 from typing import Dict, Optional, Union
+from src.infrastructure.hadoop_setup import setup_hadoop
 
 class SparkManager:
     """Gerenciador simplificado de sessões Spark"""
@@ -46,16 +47,11 @@ class SparkManager:
                             os.environ["PATH"] = f"{os.path.join(java_home, 'bin')};{os.environ.get('PATH', '')}"
                             self.logger.info(f"JAVA_HOME configurado: {java_home}")
                             break
-                    
-            # Configurar HADOOP_HOME
-            if not os.environ.get("HADOOP_HOME"):
-                project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-                hadoop_home = os.path.join(project_root, "hadoop")
-                if not os.path.exists(hadoop_home):
-                    os.makedirs(hadoop_home, exist_ok=True)
-                os.environ["HADOOP_HOME"] = hadoop_home
-                os.environ["PATH"] = f"{os.path.join(hadoop_home, 'bin')};{os.environ.get('PATH', '')}"
-                self.logger.info(f"HADOOP_HOME configurado: {hadoop_home}")
+            
+            # Configura Hadoop (multiplataforma)
+            if not setup_hadoop():
+                self.logger.error("Falha na configuração do Hadoop")
+                return False
                 
             # Inicializar Spark
             findspark.init()

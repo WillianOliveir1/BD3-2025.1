@@ -51,6 +51,46 @@ pip install -r requirements.txt
      - O arquivo deve ficar apenas em `%USERPROFILE%\.kaggle\kaggle.json`
      - Não coloque o arquivo em nenhum outro local do projeto
 
+## Configuração das Variáveis de Ambiente
+
+O projeto utiliza um arquivo `.env` para configurar variáveis de ambiente importantes. Copie o arquivo `.env.example` para `.env` e configure as seguintes variáveis:
+
+### SPARK_HOME
+- **O que é**: Caminho para a instalação do Apache Spark
+- **Como configurar**: 
+  1. Baixe o Apache Spark da [página oficial](https://spark.apache.org/downloads.html)
+  2. Descompacte em um diretório (ex: `C:/spark-3.5.0-bin-hadoop3`)
+  3. Defina `SPARK_HOME` com o caminho completo para este diretório
+
+### KAGGLE_USERNAME e KAGGLE_KEY
+- **O que é**: Suas credenciais do Kaggle
+- **Como configurar**:
+  1. Acesse [kaggle.com/account](https://www.kaggle.com/account)
+  2. Role até a seção "API"
+  3. Clique em "Create New API Token"
+  4. Abra o arquivo `kaggle.json` baixado
+  5. Copie o valor de "username" para `KAGGLE_USERNAME`
+  6. Copie o valor de "key" para `KAGGLE_KEY`
+
+### JAVA_HOME
+- **O que é**: Caminho para a instalação do Java JDK
+- **Como configurar**:
+  1. Instale o Java JDK 11 ou superior
+  2. Encontre o diretório de instalação (geralmente em `C:/Program Files/Java/jdk-11.x.x`)
+  3. Defina `JAVA_HOME` com o caminho completo para este diretório
+
+### DATA_PATH
+- **O que é**: Caminho para o diretório onde os dados serão armazenados
+- **Valor padrão**: `./data`
+- **Como configurar**: 
+  - Mantenha o valor padrão `./data` para usar o diretório local
+  - Ou defina um caminho absoluto para armazenar os dados em outro local
+
+### KAGGLE_DATASET
+- **O que é**: Identificador do dataset do Kaggle que será usado
+- **Valor padrão**: `matheusfreitag/gas-prices-in-brazil`
+- **Observação**: Não altere este valor, ele é específico para este projeto
+
 ## Estrutura do Projeto
 
 
@@ -63,25 +103,22 @@ O projeto segue uma arquitetura em camadas para processamento de dados:
 .
 ├── data/                      # Dados organizados em camadas
 │   ├── bronze/               # Dados brutos do Kaggle
-│   │   └── kaggle/
-│   │       └── gas_prices_in_brazil/
+│   │   └── gas_prices_in_brazil/
 │   ├── silver/              # Modelo Star Schema
-│   │   └── kaggle/
-│   │       └── gas_prices_in_brazil/
-│   │           ├── dim_regiao.parquet
-│   │           ├── dim_estado.parquet
-│   │           ├── dim_produto.parquet
-│   │           ├── dim_tempo.parquet
-│   │           └── fact_precos.parquet
+│   │   └── gas_prices_in_brazil/
+│   │       ├── dim_regiao.parquet
+│   │       ├── dim_estado.parquet
+│   │       ├── dim_produto.parquet
+│   │       ├── dim_tempo.parquet
+│   │       └── fact_precos.parquet
 │   └── gold/                # Visualizações e análises
-│       └── kaggle/
-│           └── gas_prices_in_brazil/
+│       └── gas_prices_in_brazil/
 ├── src/                      # Código fonte
 │   ├── infrastructure/      # Componentes compartilhados
 │   │   ├── data_lake_manager.py
 │   │   └── spark_manager_v2.py
 │   └── pipeline/
-│       └── kaggle/          # Pipeline específico Kaggle
+│       └── gas_prices_in_brazil/          # Pipeline específico Kaggle
 │           ├── upstream/    # Extração (E)
 │           ├── midstream/   # Transformação (T)
 │           ├── downstream/  # Load (L)
@@ -122,19 +159,19 @@ O projeto segue uma arquitetura em camadas para processamento de dados:
 
 ### Pipeline Completo
 ```bash
-python src/pipeline/kaggle/run_pipeline.py
+python src/pipeline/gas_prices_in_brazil/run_pipeline.py
 ```
 
 ### Execução por Etapas
 ```bash
 # Extração (Bronze)
-python src/pipeline/kaggle/run_stages.py --stage extract
+python src/pipeline/gas_prices_in_brazil/run_stages.py --stage extract
 
 # Transformação (Silver)
-python src/pipeline/kaggle/run_stages.py --stage transform
+python src/pipeline/gas_prices_in_brazil/run_stages.py --stage transform
 
 # Carregamento (Gold)
-python src/pipeline/kaggle/run_stages.py --stage load
+python src/pipeline/gas_prices_in_brazil/run_stages.py --stage load
 ```
 
 ## Testes

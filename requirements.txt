@@ -25,7 +25,6 @@ fastjsonschema==2.21.1
 findspark==2.0.1
 flake8==6.1.0
 fqdn==1.5.1
--e c:\users\wioliveira\onedrive - modec\documents\personal\bd3\bd3-2025.1
 h11==0.16.0
 httpcore==1.0.9
 httpx==0.28.1
@@ -71,7 +70,7 @@ numpy==1.26.4
 openpyxl==3.1.2
 overrides==7.7.0
 packaging==25.0
-pandas==2.1.0
+pandas>=2.0.0
 pandocfilters==1.5.1
 parso==0.8.4
 pathspec==0.12.1
@@ -83,12 +82,12 @@ protobuf==6.31.0
 psutil==7.0.0
 pure_eval==0.2.3
 py4j==0.10.9.7
-pyarrow==14.0.1
+pyarrow>=14.0.1
 pycodestyle==2.11.1
 pycparser==2.22
 pyflakes==3.1.0
 Pygments==2.19.1
-pyspark==3.5.5
+pyspark>=3.5.0
 pytest==7.4.0
 pytest-cov==4.1.0
 python-dateutil==2.9.0.post0

@@ -3,7 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .Python
-.venv/
+venv
 *.egg-info/
 dist/
 build/
@@ -21,7 +21,6 @@ data/
 kaggle.json
 **/kaggle.json
 config/kaggle.json
-.env
 
 # Temp files
 logs/

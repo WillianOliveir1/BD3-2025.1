@@ -26,7 +26,7 @@ def main():
         print("🎉 Pipeline ETL executado com sucesso!")
         print("✅ Dados extraídos do Kaggle")
         print("✅ Dados transformados e salvos na camada Silver")
-        print("📁 Verifique a pasta 'data/silver/fuel_prices_hybrid/' para os resultados")
+        print("📁 Verifique a pasta 'data/silver/kaggle/gas_prices_in_brazil' para os resultados")
         
     except KeyboardInterrupt:
         print("\n⚠️  Pipeline interrompido pelo usuário")
