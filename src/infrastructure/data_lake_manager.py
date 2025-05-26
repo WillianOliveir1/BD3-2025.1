@@ -4,23 +4,9 @@ DataLakeManager é responsável por gerenciar a estrutura do data lake e suas op
 
 from pathlib import Path
 import os
-import logging
 from datetime import datetime
-
-def setup_logger(name: str) -> logging.Logger:
-    """Configura um logger com formato específico"""
-    logger = logging.getLogger(name)
-    
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-        )
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        logger.setLevel(logging.INFO)
-    
-    return logger
+from src.infrastructure.config import CONFIG
+from src.infrastructure.logging_config import setup_logger, LOG_EMOJIS
 
 class DataLakeManager:
     """
@@ -33,38 +19,30 @@ class DataLakeManager:
         Inicializa o DataLakeManager.
         
         Args:
-            base_path: Caminho base para o data lake. Se não fornecido,
-                      usa o diretório 'data' no root do projeto.
+            base_path: Caminho base para o data lake. Se não fornecido, usa o caminho definido em CONFIG['DATA_PATH'].
         """
         self.logger = setup_logger('DataLakeManager')
         
-        if base_path:
-            self.base_path = Path(base_path)
-        else:
-            # Encontra o diretório root do projeto (onde está o README.md)
-            current_dir = Path(__file__).resolve().parent
-            while current_dir.name != 'BD3-2025.1' and current_dir.parent != current_dir:
-                current_dir = current_dir.parent
-            self.base_path = current_dir / 'data'
+        self.base_path = Path(base_path) if base_path else Path(CONFIG['DATA_PATH'])
         
-        # Define os diretórios das camadas
-        self.bronze_dir = self.base_path / 'bronze'
-        self.silver_dir = self.base_path / 'silver'
-        self.gold_dir = self.base_path / 'gold'
+        # Define os diretórios das camadas usando configurações centrais
+        self.bronze_dir = self.base_path / CONFIG['BRONZE_PATH']
+        self.silver_dir = self.base_path / CONFIG['SILVER_PATH']
+        self.gold_dir = self.base_path / CONFIG['GOLD_PATH']
         
         # Cria a estrutura base
         self._create_base_structure()
         
     def _create_base_structure(self):
         """Cria a estrutura base do data lake."""
-        self.logger.info(f"Inicializando estrutura do data lake em: {self.base_path}")
+        self.logger.info("%s Inicializando estrutura do data lake em: %s", LOG_EMOJIS['START'], self.base_path)
         
         # Cria diretórios base
         os.makedirs(self.bronze_dir, exist_ok=True)
         os.makedirs(self.silver_dir, exist_ok=True)
         os.makedirs(self.gold_dir, exist_ok=True)
         
-        self.logger.info("Estrutura base do data lake criada com sucesso")
+        self.logger.info("%s Estrutura base do data lake criada com sucesso", LOG_EMOJIS['SUCCESS'])
     
     def get_bronze_path(self, source: str, dataset: str, date: datetime = None) -> Path:
         """
@@ -126,11 +104,17 @@ class DataLakeManager:
             
         Returns:
             Tupla com os paths para as camadas (bronze, silver, gold)
-        """
+        """        
+        
         # Cria diretórios com data
         bronze_path = self.get_bronze_path(source, dataset, date)
         silver_path = self.get_silver_path(dataset, date)
         gold_path = self.get_gold_path(dataset, date)
+        
+        self.logger.info("%s Criando diretórios de processamento para %s:", LOG_EMOJIS['FILE'], dataset)
+        self.logger.info("%s Bronze: %s", LOG_EMOJIS['FILE'], bronze_path)
+        self.logger.info("%s Silver: %s", LOG_EMOJIS['FILE'], silver_path)
+        self.logger.info("%s Gold: %s", LOG_EMOJIS['FILE'], gold_path)
         
         os.makedirs(bronze_path, exist_ok=True)
         os.makedirs(silver_path, exist_ok=True)

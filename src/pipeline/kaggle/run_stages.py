@@ -8,12 +8,12 @@ from pathlib import Path
 from datetime import datetime
 import logging
 from typing import Optional
+from src.pipeline.kaggle.etl_pipeline import FuelPriceETL, PipelineStage
+from src.infrastructure.logging_config import LOG_EMOJIS
 
 # Adiciona o diretório raiz ao PYTHONPATH
 root_dir = Path(__file__).resolve().parent.parent.parent.parent
 sys.path.append(str(root_dir))
-
-from src.pipeline.kaggle.etl_pipeline import FuelPriceETL, PipelineStage, setup_logger
 
 def setup_args_parser():
     """Configura o parser de argumentos da linha de comando"""
@@ -21,13 +21,13 @@ def setup_args_parser():
         description="Executa etapas individuais do pipeline ETL de preços de combustíveis",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Exemplos de uso:
-  python run_stages.py --stage extract                 # Apenas extração
-  python run_stages.py --stage transform              # Apenas transformação
-  python run_stages.py --stage load                   # Apenas carregamento
-  python run_stages.py --stage all                    # Pipeline completo
-  python run_stages.py --stage transform --input-file "path/to/file.tsv"  # Transformação com arquivo específico
-        """
+                Exemplos de uso:
+                python run_stages.py --stage extract                 # Apenas extração
+                python run_stages.py --stage transform              # Apenas transformação
+                python run_stages.py --stage load                   # Apenas carregamento
+                python run_stages.py --stage all                    # Pipeline completo
+                python run_stages.py --stage transform --input-file "path/to/file.tsv"  # Transformação com arquivo específico
+            """
     )
     
     parser.add_argument(
@@ -69,31 +69,31 @@ def configure_logging(verbose: bool = False):
 def run_extract_stage(etl: FuelPriceETL) -> Path:
     """Executa apenas a etapa de extração"""
     logger = logging.getLogger('StageRunner')
-    logger.info("🔄 Executando etapa de EXTRAÇÃO...")
+    logger.info(f"{LOG_EMOJIS['START']} Executando etapa de EXTRAÇÃO...")
     
     try:
         result = etl.extract()
-        logger.info(f"✅ Extração concluída com sucesso!")
-        logger.info(f"📄 Arquivo extraído: {result}")
+        logger.info(f"{LOG_EMOJIS['SUCCESS']} Extração concluída com sucesso!")
+        logger.info(f"{LOG_EMOJIS['FILE']} Arquivo extraído: {result}")
         return result
     except Exception as e:
-        logger.error(f"❌ Erro na extração: {str(e)}")
+        logger.error(f"{LOG_EMOJIS['ERROR']} Erro na extração: {str(e)}")
         raise
 
 def run_transform_stage(etl: FuelPriceETL, input_file: Optional[str] = None):
     """Executa apenas a etapa de transformação"""
-    logger = logging.getLogger('StageRunner')
-    logger.info("🔄 Executando etapa de TRANSFORMAÇÃO...")
+    logger = logging.getLogger('StageRunner')    
+    logger.info("%s Executando etapa de TRANSFORMAÇÃO...", LOG_EMOJIS['PROCESS'])
     
     try:
         input_path = Path(input_file) if input_file else None
         result = etl.transform(input_path)
         
-        logger.info(f"✅ Transformação concluída com sucesso!")
+        logger.info("%s Transformação concluída com sucesso!", LOG_EMOJIS['SUCCESS'])
         if result.get('success'):
-            logger.info(f"📊 Registros processados: {result.get('records_count', 'N/A')}")
-            logger.info(f"⏱️  Tempo: {result.get('processing_time_seconds', 0):.2f}s")
-            logger.info(f"📁 Pasta Silver: {result.get('silver_path', 'N/A')}")
+            logger.info("%s Registros processados: %s", LOG_EMOJIS['DATA'], result.get('records_count', 'N/A'))
+            logger.info("%s Tempo: %.2fs", LOG_EMOJIS['TIME'], result.get('processing_time_seconds', 0))
+            logger.info("%s Pasta Silver: %s", LOG_EMOJIS['FILE'], result.get('silver_path', 'N/A'))
         
         return result
     except Exception as e:

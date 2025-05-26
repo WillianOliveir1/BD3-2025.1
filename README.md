@@ -53,7 +53,7 @@ pip install -r requirements.txt
 
 ## Configuração das Variáveis de Ambiente
 
-O projeto utiliza um arquivo `.env` para configurar variáveis de ambiente importantes. Copie o arquivo `.env.example` para `.env` e configure as seguintes variáveis:
+O projeto utiliza um arquivo `.env` para configurar variáveis de ambiente importantes. 
 
 ### SPARK_HOME
 - **O que é**: Caminho para a instalação do Apache Spark

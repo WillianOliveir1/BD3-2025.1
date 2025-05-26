@@ -1,7 +1,6 @@
 """
 Transformador de dados da camada bronze para silver usando modelo dimensional
 """
-import logging
 import time
 from pathlib import Path
 from typing import Dict, Any
@@ -10,6 +9,12 @@ from pyspark.sql import functions as F
 from pyspark.sql.window import Window
 
 from src.infrastructure.spark_manager import SparkManager
+from src.infrastructure.logging_config import setup_logger, LOG_EMOJIS
+from src.infrastructure.config import CONFIG
+from src.infrastructure.data_lake_manager import DataLakeManager
+
+# Configurar logger
+logger = setup_logger('MultidimensionalTransformer')
 
 class MultidimensionalTransformer:
     """Classe responsável por transformar dados da bronze em modelo estrela"""
@@ -21,8 +26,9 @@ class MultidimensionalTransformer:
         Args:
             output_base_path: Caminho base para salvar os arquivos transformados
         """
-        self.logger = logging.getLogger(self.__class__.__name__)
-        self.output_base_path = output_base_path or "data/silver"
+        self.logger = setup_logger(self.__class__.__name__)
+        self.data_lake_manager = DataLakeManager()
+        self.output_base_path = output_base_path or str(self.data_lake_manager.silver_dir)
         self.spark = None
         self.spark_manager = None
 
@@ -39,7 +45,7 @@ class MultidimensionalTransformer:
             self.spark = self.spark_manager.start_session()
             return True
         except Exception as e:
-            self.logger.error(f"Erro ao configurar Spark: {str(e)}")
+            self.logger.error("%s Erro ao configurar Spark: %s", LOG_EMOJIS['ERROR'], str(e))
             return False
 
     def _ensure_spark(self):
@@ -102,9 +108,11 @@ class MultidimensionalTransformer:
             # Criar fato
             fact_precos = self._create_fact_precos(df, dim_regiao, dim_estado, dim_produto, dim_tempo)
             
-            # Preparar caminho de saída
-            output_path = Path(self.output_base_path) / "kaggle" / "gas_prices_in_brazil"
+            # Preparar caminho de saída usando DataLakeManager
+            output_path = Path(self.output_base_path) / CONFIG['DATASET_SOURCE'] / CONFIG['DATASET_NAME']
             output_path.mkdir(parents=True, exist_ok=True)
+            
+            self.logger.info("%s Salvando arquivos na camada Silver: %s", LOG_EMOJIS['FILE'], output_path)
             
             # Salvar arquivos
             dim_regiao.write.mode("overwrite").parquet(str(output_path / "dim_regiao.parquet"))
@@ -112,7 +120,7 @@ class MultidimensionalTransformer:
             dim_produto.write.mode("overwrite").parquet(str(output_path / "dim_produto.parquet"))
             dim_tempo.write.mode("overwrite").parquet(str(output_path / "dim_tempo.parquet"))
             fact_precos.write.mode("overwrite").parquet(str(output_path / "fact_precos.parquet"))
-              # Atualizar resultado
+            # Atualizar resultado
             result.update({
                 'success': True,
                 'output_path': str(output_path),
@@ -130,7 +138,7 @@ class MultidimensionalTransformer:
             })
             
         except Exception as e:
-            self.logger.error(f"Erro na transformação: {str(e)}")
+            self.logger.error("%s Erro na transformação: %s", LOG_EMOJIS['ERROR'], str(e))
             result['error'] = str(e)
         finally:
             self._cleanup_spark()
@@ -182,13 +190,16 @@ class MultidimensionalTransformer:
         dim_produto: DataFrame,
         dim_tempo: DataFrame
     ) -> DataFrame:
-        """Cria tabela fato de preços"""        # Preparar dimensões com aliases para join e renomear IDs para evitar ambiguidade
+        """Cria tabela fato de preços"""          
+        
+        # Preparar dimensões com aliases para join e renomear IDs para evitar ambiguidade
         dim_regiao_alias = dim_regiao.withColumnRenamed("nome", "REGIÃO").withColumnRenamed("id", "regiao_id")
         dim_estado_alias = dim_estado.withColumnRenamed("nome", "ESTADO").withColumnRenamed("id", "estado_id")
         dim_produto_alias = dim_produto.withColumnRenamed("nome", "PRODUTO") \
             .withColumnRenamed("unidade", "UNIDADE DE MEDIDA") \
             .withColumnRenamed("id", "produto_id")
-          # Preparar datas para join com dimensão tempo - ajustado para o formato correto (YYYY-MM-DD)
+        
+        # Preparar datas para join com dimensão tempo - ajustado para o formato correto (YYYY-MM-DD)
         df_with_dates = df.withColumn(
             "inicio", 
             F.to_timestamp(F.col("DATA INICIAL"), "yyyy-MM-dd")
@@ -216,7 +227,7 @@ class MultidimensionalTransformer:
                 F.col("MARGEM MÉDIA REVENDA").cast("decimal(10,2)").alias("margemMediaRevenda")
             )
     
-    def _get_latest_bronze_folder(self, base_path: str = "data/bronze/kaggle/gas_prices_in_brazil") -> str:
+    def _get_latest_bronze_folder(self, base_path: str = None) -> str:
         """
         Encontra a pasta mais recente na camada bronze
         
@@ -227,6 +238,10 @@ class MultidimensionalTransformer:
             Caminho completo para a pasta mais recente
         """
         try:
+            if base_path is None:
+                # Usar caminho do DataLakeManager
+                base_path = str(self.data_lake_manager.bronze_dir / CONFIG['DATASET_SOURCE'] / CONFIG['DATASET_NAME'])
+            
             # Listar todas as pastas de data
             data_folders = [d for d in Path(base_path).glob("*") if d.is_dir()]
             if not data_folders:
@@ -238,5 +253,14 @@ class MultidimensionalTransformer:
             # Retornar o caminho completo
             return str(latest_folder)
         except Exception as e:
-            self.logger.error(f"Erro ao buscar pasta mais recente: {str(e)}")
+            self.logger.error("%s Erro ao buscar pasta mais recente: %s", LOG_EMOJIS['ERROR'], str(e))
             raise
+    
+    def get_spark_session(self) -> Any:
+        """
+        Retorna uma sessão Spark ativa
+        
+        Returns:
+            SparkSession: Sessão Spark ativa
+        """
+        return self._ensure_spark()
